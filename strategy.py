@@ -20,7 +20,7 @@ class bcolors:
 
 def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-0.01, SELL_THRESHOLD=0.02):
     print(f"\nFile: {bcolors.UNDERLINE}{file}{bcolors.ENDC}")
-    stock = file.split("-")[2]
+    stock = file.split("/")[1].split("-")[0]
     print(
         f"* Testing strategy on stock: {bcolors.HEADER}{stock}{bcolors.ENDC}")
     df = pd.read_csv(file)
