@@ -3,7 +3,16 @@ import os
 import datetime
 from matplotlib import pyplot as plt
 
-log = open(f"logs/{datetime.datetime.now().isoformat()}.log", "w")
+
+os.makedirs("logs", exist_ok=True)
+log_file = open(f"logs/{datetime.datetime.now().isoformat()}.log", "w")
+
+
+def log(*args):
+    print(*args, file=log_file)
+
+
+CACHE = {}
 
 
 class bcolors:
@@ -19,15 +28,20 @@ class bcolors:
 
 
 def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-0.01, SELL_THRESHOLD=0.02):
-    print(f"\nFile: {bcolors.UNDERLINE}{file}{bcolors.ENDC}", file=log)
+    log(f"\nFile: {bcolors.UNDERLINE}{file}{bcolors.ENDC}")
     stock = file.split("/")[1].split("-")[0]
-    print(
-        f"* Testing strategy on stock: {bcolors.HEADER}{stock}{bcolors.ENDC}", file=log)
-    df = pd.read_csv(file)
-    print(df.columns.tolist(), file=log)
+    log(
+        f"* Testing strategy on stock: {bcolors.HEADER}{stock}{bcolors.ENDC}")
 
-    data = df.values.tolist()
-    data = [[d[0], d[1], float(str(d[8]).replace(",", ""))] for d in data]
+    if file in CACHE:
+        data = CACHE[file]
+    else:
+        df = pd.read_csv(file)
+        # print(df.columns.tolist(), file=log)
+
+        data = df.values.tolist()
+        CACHE[file] = data
+        # data = [[d[0], d[1], float(str(d[8]).replace(",", ""))] for d in data]
 
     L = len(data)
     # plt.plot([d[2] for d in data])
@@ -46,9 +60,9 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
             sum += data[i+j+AVG_GAP+1][2]
         avg = sum / AVG_DAYS
         diff = price - avg
-        print(i, date, price, avg, diff, file=log)
+        log(i, date, price, avg, diff, file)
         if diff < BUY_THRESHOLD * avg:
-            print("buy", file=log)
+            log("buy")
             if (cash > price):
                 trades += 1
                 cash -= 1*price
@@ -56,7 +70,7 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
                 volume += price
 
         if diff > SELL_THRESHOLD * avg:
-            print("sell", file=log)
+            log("sell")
             if (stock > 0):
                 trades += 1
                 cash += 1*price
@@ -64,15 +78,15 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
                 volume += price
     profit = int(cash + stock*data[0][2]) - START_CASH
     if profit > 0:
-        print(
-            f"--------SUCCESS ({bcolors.OKGREEN}{profit}{bcolors.ENDC})--------", file=log)
+        log(
+            f"--------SUCCESS ({bcolors.OKGREEN}{profit}{bcolors.ENDC})--------")
     else:
-        print(
-            f"--------FAILURE ({bcolors.FAIL}{profit}{bcolors.ENDC})--------", file=log)
-    print(
-        f">> Cash: {int(cash)}, Stock: {stock}, Asset: {int(stock*data[0][2])}, Trades: {trades}, Volume: {int(volume)}", file=log)
-    print(
-        f":: Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}", file=log)
+        log(
+            f"--------FAILURE ({bcolors.FAIL}{profit}{bcolors.ENDC})--------")
+    log(
+        f">> Cash: {int(cash)}, Stock: {stock}, Asset: {int(stock*data[0][2])}, Trades: {trades}, Volume: {int(volume)}")
+    log(
+        f":: Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}")
     return profit, cash
 
 
@@ -110,17 +124,15 @@ if __name__ == "__main__":
     y1 = []
     y2 = []
 
-    for rate in range(0, 100):
-        print(f"Optimizing @rate={rate/10:.1f}")
-        c, p, i = run_all(buy_threshold=-rate/1000,
-                          sell_threshold=2*rate/1000, start_cash=15000)
-        x.append(rate/10)
-        y1.append(c/i)
-        y2.append(p/i)
-
-    plt.plot(x, y1)
-    plt.plot(x, y2)
-    plt.show()
+    for rate in range(1, 20):
+        print(f"Optimizing @avg={rate}")
+        c, p, i = run_all(avg_days=rate)
+        x.append(rate)
+        y1.append(100-100*c/i)
+        y2.append(100*p/i)
 
     end_time = datetime.datetime.now()
     print(f"Time Taken: {end_time-start_time} s")
+    plt.plot(x, y1, 'b')
+    plt.plot(x, y2, 'r')
+    plt.show()
