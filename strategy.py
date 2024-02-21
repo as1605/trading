@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import datetime
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 log = open(f"logs/{datetime.datetime.now().isoformat()}.log", "w")
 
@@ -19,10 +19,10 @@ class bcolors:
 
 
 def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-0.01, SELL_THRESHOLD=0.02):
-    print(f"\nFile: {bcolors.UNDERLINE}{file}{bcolors.ENDC}")
+    print(f"\nFile: {bcolors.UNDERLINE}{file}{bcolors.ENDC}", file=log)
     stock = file.split("/")[1].split("-")[0]
     print(
-        f"* Testing strategy on stock: {bcolors.HEADER}{stock}{bcolors.ENDC}")
+        f"* Testing strategy on stock: {bcolors.HEADER}{stock}{bcolors.ENDC}", file=log)
     df = pd.read_csv(file)
     print(df.columns.tolist(), file=log)
 
@@ -65,37 +65,62 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
     profit = int(cash + stock*data[0][2]) - START_CASH
     if profit > 0:
         print(
-            f"--------SUCCESS ({bcolors.OKGREEN}{profit}{bcolors.ENDC})--------")
+            f"--------SUCCESS ({bcolors.OKGREEN}{profit}{bcolors.ENDC})--------", file=log)
     else:
         print(
-            f"--------FAILURE ({bcolors.FAIL}{profit}{bcolors.ENDC})--------")
+            f"--------FAILURE ({bcolors.FAIL}{profit}{bcolors.ENDC})--------", file=log)
     print(
-        f">> Cash: {int(cash)}, Stock: {stock}, Asset: {int(stock*data[0][2])}, Trades: {trades}, Volume: {int(volume)}")
+        f">> Cash: {int(cash)}, Stock: {stock}, Asset: {int(stock*data[0][2])}, Trades: {trades}, Volume: {int(volume)}", file=log)
     print(
-        f":: Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}")
+        f":: Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}", file=log)
     return profit, cash
 
 
-if __name__ == "__main__":
-    print(f"Starting strategy test at {datetime.datetime.now()}")
+def run_all(data_dir="data", start_cash=10000, avg_days=7, avg_gap=2, buy_threshold=-0.01, sell_threshold=0.02):
     total_profit = 0
     total_cash = 0
     initial_cash = 0
-    for path in os.listdir('data'):
+
+    for path in os.listdir(data_dir):
         if path.endswith('.csv'):
-            initial_cash += 1000
-            p, c = test_strategy(f'data/{path}',
-                                 START_CASH=1000,
-                                 AVG_DAYS=7,
-                                 AVG_GAP=0,
-                                 BUY_THRESHOLD=-0.01,
-                                 SELL_THRESHOLD=0.02
+            initial_cash += start_cash
+            p, c = test_strategy(f'{data_dir}/{path}',
+                                 START_CASH=start_cash,
+                                 AVG_DAYS=avg_days,
+                                 AVG_GAP=avg_gap,
+                                 BUY_THRESHOLD=buy_threshold,
+                                 SELL_THRESHOLD=sell_threshold
                                  )
             total_profit += p
             total_cash += c
     print(
-        f"\n\nInitial cash: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{initial_cash:.2f}{bcolors.ENDC}")
+        f"Initial cash: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{initial_cash:.2f}{bcolors.ENDC}")
     print(
         f"Margin: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{100*total_cash/initial_cash:.2f}%{bcolors.ENDC}")
     print(
-        f"Total profit: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{100*total_profit/initial_cash:.2f}%{bcolors.ENDC}")
+        f"Total profit: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{100*total_profit/initial_cash:.2f}%{bcolors.ENDC}\n\n")
+    return total_cash, total_profit, initial_cash
+
+
+if __name__ == "__main__":
+    start_time = datetime.datetime.now()
+    print(f"Starting strategy test at {start_time}")
+
+    x = []
+    y1 = []
+    y2 = []
+
+    for rate in range(0, 100):
+        print(f"Optimizing @rate={rate/10:.1f}")
+        c, p, i = run_all(buy_threshold=-rate/1000,
+                          sell_threshold=2*rate/1000, start_cash=15000)
+        x.append(rate/10)
+        y1.append(c/i)
+        y2.append(p/i)
+
+    plt.plot(x, y1)
+    plt.plot(x, y2)
+    plt.show()
+
+    end_time = datetime.datetime.now()
+    print(f"Time Taken: {end_time-start_time} s")
