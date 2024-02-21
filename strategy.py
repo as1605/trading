@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import datetime
+# from matplotlib import pyplot as plt
 
 log = open(f"logs/{datetime.datetime.now().isoformat()}.log", "w")
 
@@ -26,9 +27,11 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
     print(df.columns.tolist(), file=log)
 
     data = df.values.tolist()
-    data = [[d[0], d[1], float(str(d[2]).replace(",", ""))] for d in data]
+    data = [[d[0], d[1], float(str(d[8]).replace(",", ""))] for d in data]
 
     L = len(data)
+    # plt.plot([d[2] for d in data])
+    # plt.show()
 
     cash = START_CASH
     stock = 0
@@ -69,16 +72,30 @@ def test_strategy(file, START_CASH=10000, AVG_DAYS=7, AVG_GAP=2, BUY_THRESHOLD=-
     print(
         f">> Cash: {int(cash)}, Stock: {stock}, Asset: {int(stock*data[0][2])}, Trades: {trades}, Volume: {int(volume)}")
     print(
-        f">> Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}")
+        f":: Profit/Volume: {bcolors.BOLD}{(100*profit/volume):.2f}%{bcolors.ENDC}")
+    return profit, cash
 
 
 if __name__ == "__main__":
+    print(f"Starting strategy test at {datetime.datetime.now()}")
+    total_profit = 0
+    total_cash = 0
+    initial_cash = 0
     for path in os.listdir('data'):
         if path.endswith('.csv'):
-            test_strategy(f'data/{path}',
-                          START_CASH=10000,
-                          AVG_DAYS=7,
-                          AVG_GAP=2,
-                          BUY_THRESHOLD=-0.01,
-                          SELL_THRESHOLD=0.02
-                          )
+            initial_cash += 1000
+            p, c = test_strategy(f'data/{path}',
+                                 START_CASH=1000,
+                                 AVG_DAYS=7,
+                                 AVG_GAP=0,
+                                 BUY_THRESHOLD=-0.01,
+                                 SELL_THRESHOLD=0.02
+                                 )
+            total_profit += p
+            total_cash += c
+    print(
+        f"\n\nInitial cash: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{initial_cash:.2f}{bcolors.ENDC}")
+    print(
+        f"Margin: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{100*total_cash/initial_cash:.2f}%{bcolors.ENDC}")
+    print(
+        f"Total profit: {bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{100*total_profit/initial_cash:.2f}%{bcolors.ENDC}")
