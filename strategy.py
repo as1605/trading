@@ -124,12 +124,14 @@ if __name__ == "__main__":
     y1 = []
     y2 = []
 
-    for rate in range(1, 20):
-        print(f"Optimizing @avg={rate}")
-        c, p, i = run_all(avg_days=rate)
-        x.append(rate)
-        y1.append(100-100*c/i)
-        y2.append(100*p/i)
+    for i in range(1, 100):
+        var = i*100
+        print(f"Optimizing @{var}")
+        c, p, init = run_all(start_cash=var, avg_days=5,
+                             avg_gap=0, buy_threshold= -0.02, sell_threshold=0.05)
+        x.append(var)
+        y1.append(100-100*c/init)
+        y2.append(100*p/init)
 
     end_time = datetime.datetime.now()
     print(f"Time Taken: {end_time-start_time} s")

@@ -59,7 +59,7 @@ STOCKS = [
 ]
 
 TODAY = datetime.datetime.now().date()
-DATES = (TODAY - datetime.timedelta(days=365), TODAY- datetime.timedelta(days=0))
+DATES = (TODAY - datetime.timedelta(days=730), TODAY- datetime.timedelta(days=365))
 
 shutil.rmtree("data")
 os.mkdir("data")
