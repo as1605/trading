@@ -59,10 +59,11 @@ STOCKS = [
 ]
 
 TODAY = datetime.datetime.now().date()
-DATES = (TODAY - datetime.timedelta(days=730), TODAY- datetime.timedelta(days=365))
+DATES = (TODAY - datetime.timedelta(days=365),
+         TODAY - datetime.timedelta(days=0))
 
 shutil.rmtree("data")
 os.mkdir("data")
 for stock in STOCKS:
     path = stock_csv(stock, DATES[0], DATES[1])
-    os.rename(path, "data/"+ path)
+    os.rename(path, "data/" + path)

@@ -120,21 +120,35 @@ if __name__ == "__main__":
     start_time = datetime.datetime.now()
     print(f"Starting strategy test at {start_time}")
 
-    x = []
-    y1 = []
-    y2 = []
+    # x = []
+    # y1 = []
+    # y2 = []
+    X = []
+    Y1 = []
+    Y2 = []
+    MARKERS = ".,ov^<>12348spP*hH+xXDd|_"
 
-    for i in range(1, 100):
-        var = i*100
-        print(f"Optimizing @{var}")
-        c, p, init = run_all(start_cash=var, avg_days=5,
-                             avg_gap=0, buy_threshold= -0.02, sell_threshold=0.05)
-        x.append(var)
-        y1.append(100-100*c/init)
-        y2.append(100*p/init)
+    for i in range(2, 9):
+        x = []
+        y1 = []
+        y2 = []
+        for j in range(1, 30):
+            var2 = j*0.1/100
+            var1 = i/2
+            print(f"Optimizing {var1}@{var2}")
+            c, p, init = run_all(start_cash=5000, avg_days=5,
+                                 avg_gap=0, buy_threshold=-1*var2, sell_threshold=var1*var2)
+            x.append(var2*100)
+            y1.append(100-100*c/init)
+            y2.append(100*p/init)
+        X.append(x)
+        Y1.append(y1)
+        Y2.append(y2)
 
     end_time = datetime.datetime.now()
     print(f"Time Taken: {end_time-start_time} s")
-    plt.plot(x, y1, 'b')
-    plt.plot(x, y2, 'r')
+    for i, x, y1, m in zip(range(2, 9), X, Y1, MARKERS):
+        plt.plot(x, y1, m+'b-', linewidth=i/3)
+    for i, x, y2, m in zip(range(2, 9), X, Y2, MARKERS):
+        plt.plot(x, y2, m+'r-', linewidth=i/3)
     plt.show()
