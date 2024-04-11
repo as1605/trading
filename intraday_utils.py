@@ -18,7 +18,7 @@ def convert_time(t: int):
     return datetime.datetime.fromtimestamp(t//1000 - 5.5*60*60).strftime('%H:%M:%S')
 
 
-def get_ochl(candlestick: list[tuple[int, int]], display=False):
+def get_ohlc(candlestick: list[tuple[int, int]], display=False):
     o = candlestick[0][1]
     c = candlestick[-1][1]
     h = max(candlestick, key=lambda x: x[1])[1]
