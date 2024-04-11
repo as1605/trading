@@ -57,6 +57,6 @@ for stock in NIFTY50:
     #     continue
 
     for candlestick in c:
-        if marubuzo(candlestick, 0.01, 0.2):
+        if marubuzo(candlestick, 0.01, 0.1):
             print("Marubuzo found!", end=" ")
             get_ohlc(candlestick, display=True)

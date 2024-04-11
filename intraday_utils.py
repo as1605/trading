@@ -34,13 +34,20 @@ def get_ohlc(candlestick: list[tuple[int, float]], display=False) -> tuple[float
     return (o, h, l, c, c-o, (c-o)/o*100)
 
 
-def split_graph_to_candlesticks(graph: list[tuple[int, int]], time: datetime.timedelta = datetime.timedelta(minutes=5)) -> list[list[tuple[int, float]]]:
+def split_graph_to_candlesticks(graph: list[tuple[int, int]], time: datetime.timedelta = datetime.timedelta(minutes=5), minutes=True) -> list[list[tuple[int, float]]]:
     candlesticks = []
     candlestick = []
     for tp in graph:
         if candlestick == []:
             candlestick = [tp]
-        elif tp[0] - candlestick[0][0] < time.total_seconds() * 1000:
+            continue
+
+        ct = datetime.datetime.fromtimestamp(tp[0]//1000)
+        ht = datetime.datetime.fromtimestamp(candlestick[0][0]//1000)
+        if minutes:
+            ct = ct.replace(second=0, microsecond=0)
+            ht = ht.replace(second=0, microsecond=0)
+        if ct - ht < time:
             candlestick.append(tp)
         else:
             candlesticks.append(candlestick)
