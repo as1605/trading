@@ -2,6 +2,7 @@ from datetime import timedelta
 from jugaad_data import nse
 
 from indices.symbols import NIFTY50, NIFTY500, NIFTYTOTALMARKET
+from intraday_strategies import marubuzo
 from intraday_utils import get_ohlc, split_graph_to_candlesticks
 from strategy import bcolors
 
@@ -46,11 +47,16 @@ for stock in NIFTY50:
     except Exception as e:
         print("Failed to fetch")
         continue
-    try:
-        print("Full Day")
-        get_ohlc(g, display=True)
-        print("Last Candlestick")
-        get_ohlc(c[-1], display=True)
-    except Exception as e:
-        print("Failed to display")
-        continue
+    # try:
+    #     print("Full Day")
+    #     get_ohlc(g, display=True)
+    #     print("Last Candlestick")
+    #     get_ohlc(c[-1], display=True)
+    # except Exception as e:
+    #     print("Failed to display")
+    #     continue
+
+    for candlestick in c:
+        if marubuzo(candlestick, 0.01, 0.2):
+            print("Marubuzo found!", end=" ")
+            get_ohlc(candlestick, display=True)

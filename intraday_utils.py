@@ -14,11 +14,11 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def convert_time(t: int):
+def convert_time(t: int) -> str:
     return datetime.datetime.fromtimestamp(t//1000 - 5.5*60*60).strftime('%H:%M:%S')
 
 
-def get_ohlc(candlestick: list[tuple[int, int]], display=False):
+def get_ohlc(candlestick: list[tuple[int, float]], display=False) -> tuple[float, float, float, float, float, float]:
     o = candlestick[0][1]
     c = candlestick[-1][1]
     h = max(candlestick, key=lambda x: x[1])[1]
@@ -34,7 +34,7 @@ def get_ohlc(candlestick: list[tuple[int, int]], display=False):
     return (o, h, l, c, c-o, (c-o)/o*100)
 
 
-def split_graph_to_candlesticks(graph: list[tuple[int, int]], time: datetime.timedelta = datetime.timedelta(minutes=5)):
+def split_graph_to_candlesticks(graph: list[tuple[int, int]], time: datetime.timedelta = datetime.timedelta(minutes=5)) -> list[list[tuple[int, float]]]:
     candlesticks = []
     candlestick = []
     for tp in graph:
