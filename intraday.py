@@ -3,6 +3,8 @@ from jugaad_data import nse
 
 from indices.symbols import NIFTY50, NIFTY500, NIFTYTOTALMARKET
 from intraday_strategies import marubuzo
+from intraday_strategies import hammer
+from intraday_strategies import hanging_man
 from intraday_utils import get_ohlc, split_graph_to_candlesticks
 from strategy import bcolors
 
@@ -60,3 +62,13 @@ for stock in NIFTY50:
         if marubuzo(candlestick, 0.01, 0.1):
             print("Marubuzo found!", end=" ")
             get_ohlc(candlestick, display=True)
+        if hammer(candlestick, 0.01, 0.1):
+            print("Hammer found!", end=" ")
+            get_ohlc(candlestick, display=True)
+        if hanging_man(candlestick, 0.01, 0.1):
+            print("Hanging Man found!", end=" ")
+            get_ohlc(candlestick, display=True)
+
+    
+        
+
