@@ -29,27 +29,25 @@ def bearish_marubuzo(candlestick: list[tuple[int, float]], tolerance: float, min
 
 def hammer(candlestick: list[tuple[int, float]], tolerance: float, mincp: float) -> bool:
     open, high, low, close, change, cp = get_ohlc(candlestick, display=False)
-    
+
     # check for previous downtrend
     # if len(candlestick) < 3:
     #     return False
     # prev_open = candlestick[][]  # previous open price
     # prev_close = candlestick[][]  # previous close price
-    
+
     # prev_prev_close = candlestick[][]  # previous close price
     # prev_prev_open = candlestick[][]  # previous open price
 
     # if prev_close < prev_open and prev_prev_close < prev_prev_open:
-        
-        
-    if (close > open) and (close-open) <= 2*(open-low) and (open>low):     # bullish hammer
-        if abs(close-high) == 0 :
+
+    if (close > open) and 2*(close-open) <= (open-low):     # bullish hammer
+        if abs(close-high) < tolerance*abs(change):
             return True
 
-        
-    if (open > close) and (open-close) <= 2*(close-low) and (close>low): # bearish hammer
-        if abs(open-high) == 0 :
-            return True    
+    if (open > close) and 2*(open-close) <= (close-low):  # bearish hammer
+        if abs(open-high) < tolerance * abs(change):
+            return True
     return False
 
 
@@ -63,14 +61,12 @@ def hanging_man(candlestick: list[tuple[int, float]], tolerance: float, mincp: f
     # prev_prev_close = candlestick[-3][1]  # previous close price
     # prev_prev_open = candlestick[-3][0]  # previous open price
     # if prev_close > prev_open and prev_prev_close > prev_prev_open:
-        
-        
-    if (close > open) and (close-open) <= 2*(open-low) and open>low: # bullish hanging man
-        if abs(close-high) == 0  :
+
+    if (close > open) and 2*(close-open) <= (open-low):  # bullish hanging man
+        if abs(close-high) < tolerance*abs(change):
             return True
 
-        
-    if (open > close) and (open-close) <= 2*(close-low) and close>low: # bearish hanging man
-        if abs(open-high) == 0 :
-            return True    
+    if (open > close) and 2*(open-close) <= (close-low):  # bearish hanging man
+        if abs(open-high) < tolerance * abs(change):
+            return True
     return False
