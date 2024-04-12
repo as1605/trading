@@ -58,17 +58,14 @@ for stock in NIFTY50:
     #     print("Failed to display")
     #     continue
 
-    for candlestick in c:
+    # Checking last 10 candlesticks (20 minutes) only
+    for candlestick in c[-10:]:
         if marubuzo(candlestick, 0.01, 0.1):
             print("Marubuzo found!", end=" ")
             get_ohlc(candlestick, display=True)
-        if hammer(candlestick, 0.01, 0.1):
+        if hammer(candlestick, 0.01, 0.05):
             print("Hammer found!", end=" ")
             get_ohlc(candlestick, display=True)
-        if hanging_man(candlestick, 0.01, 0.1):
+        if hanging_man(candlestick, 0.01, 0.05):
             print("Hanging Man found!", end=" ")
             get_ohlc(candlestick, display=True)
-
-    
-        
-
