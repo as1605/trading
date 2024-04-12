@@ -45,7 +45,7 @@ explore("RELIANCE")
 for stock in NIFTY50:
     print("*"*40, bcolors.BOLD, stock, bcolors.ENDC, "*"*(40-len(stock)))
     try:
-        g, c = fetch(stock)
+        g, candlesticks = fetch(stock)
     except Exception as e:
         print("Failed to fetch")
         continue
@@ -59,13 +59,18 @@ for stock in NIFTY50:
     #     continue
 
     # Checking last 10 candlesticks (20 minutes) only
-    for candlestick in c[-10:]:
-        if marubuzo(candlestick, 0.01, 0.1):
+    for i in range(10):
+        last = candlesticks[-i-1]
+        if i == 0:
+            window = candlesticks[-10:]
+        else:
+            window = candlesticks[-i-10:-i]
+        if marubuzo(candlesticks[-i-1], 0.01, 0.1):
             print("Marubuzo found!", end=" ")
-            get_ohlc(candlestick, display=True)
-        if hammer(candlestick, 0.01, 0.05):
+            get_ohlc(candlesticks[-i-1], display=True)
+        if hammer(window, 0.01, 0.05):
             print("Hammer found!", end=" ")
-            get_ohlc(candlestick, display=True)
-        if hanging_man(candlestick, 0.01, 0.05):
+            get_ohlc(window, display=True)
+        if hanging_man(window, 0.01, 0.05):
             print("Hanging Man found!", end=" ")
-            get_ohlc(candlestick, display=True)
+            get_ohlc(window, display=True)
