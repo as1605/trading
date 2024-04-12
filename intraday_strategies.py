@@ -34,7 +34,6 @@ def hammer(candlesticks: list[list[tuple[int, float]]], tolerance=0.1, mincp=0.1
     prev = candlesticks[-2]
     prev_open, prev_high, prev_low, prev_close, prev_change, prev_cp = get_ohlc(
         prev, display=False)
-    
 
     if bullish_hammer(candlestick, tolerance, mincp) or bearish_hammer(candlestick, tolerance, mincp):
         return True
@@ -63,7 +62,14 @@ def bearish_hammer(candlestick: list[tuple[int, float]], tolerance: float, mincp
     return False
 
 
-def hanging_man(candlestick: list[tuple[int, float]], tolerance=0.1, mincp=0.1) -> bool:
+def hanging_man(candlesticks: list[list[tuple[int, float]]], tolerance=0.1, mincp=0.1) -> bool:
+    if len(candlesticks) < 2:
+        return False
+    candlestick = candlesticks[-1]
+    prev = candlesticks[-2]
+    prev_open, prev_high, prev_low, prev_close, prev_change, prev_cp = get_ohlc(
+        prev, display=False)
+
     if bullish_hanging_man(candlestick, tolerance, mincp) or bearish_hanging_man(candlestick, tolerance, mincp):
         return True
     return False

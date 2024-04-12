@@ -70,7 +70,7 @@ for stock in NIFTY50:
             get_ohlc(candlesticks[-i-1], display=True)
         if hammer(window, 0.01, 0.05):
             print("Hammer found!", end=" ")
-            get_ohlc(window, display=True)
+            get_ohlc(last, display=True)
         if hanging_man(window, 0.01, 0.05):
             print("Hanging Man found!", end=" ")
-            get_ohlc(window, display=True)
+            get_ohlc(last, display=True)
