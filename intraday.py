@@ -1,4 +1,7 @@
 from datetime import timedelta
+import datetime
+import json
+import os
 from jugaad_data import nse
 
 from indices.symbols import NIFTY50, NIFTY500, NIFTYTOTALMARKET
@@ -6,14 +9,27 @@ from intraday_strategies import marubuzo
 from intraday_strategies import hammer
 from intraday_strategies import hanging_man
 from intraday_utils import get_ohlc, split_graph_to_candlesticks
-from strategy import bcolors
+from strategy import CACHE, bcolors
 
 jugaad = nse.NSELive()
 
+os.makedirs("data", exist_ok=True)
+os.makedirs("data/cache", exist_ok=True)
+CACHE_DIR = f"data/cache/{datetime.datetime.now().strftime('%Y-%m-%d')}"
+os.makedirs(CACHE_DIR, exist_ok=True)
 
-def fetch(stock: str):
-    data = jugaad.chart_data(stock)
-    graph = data['grapthData']
+
+def fetch(stock: str, cache=False):
+    if cache and os.path.exists(f"{CACHE_DIR}/{stock}.json"):
+        with open(f"{CACHE_DIR}/{stock}.json", "r") as f:
+            graph = json.load(f)
+    else:
+        data = jugaad.chart_data(stock)
+        graph = data['grapthData']
+
+    if cache:
+        with open(f"{CACHE_DIR}/{stock}.json", "w") as f:
+            json.dump(graph, f)
 
     candlesticks = split_graph_to_candlesticks(graph, timedelta(minutes=2))
 
@@ -45,7 +61,7 @@ explore("RELIANCE")
 for stock in NIFTY50:
     print("*"*40, bcolors.BOLD, stock, bcolors.ENDC, "*"*(40-len(stock)))
     try:
-        g, candlesticks = fetch(stock)
+        g, candlesticks = fetch(stock, cache=True)
     except Exception as e:
         print("Failed to fetch")
         continue
