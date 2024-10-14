@@ -1,11 +1,15 @@
+import os
 import requests
 import datetime
 from indices.symbols import NIFTY50
+import pandas as pd
+import matplotlib.pyplot as plt
 
 HOME = "https://www.nseindia.com"
 BASE_URL = "https://www.nseindia.com/api/option-chain-equities?symbol="
 PRICE_URL = "https://www.nseindia.com/api/quote-equity?symbol="
-
+LOG_PATH = "data/options"
+os.makedirs(LOG_PATH, exist_ok=True)
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" ,
@@ -61,7 +65,6 @@ def get_price(symbol):
 SYMBOLS= NIFTY50
 for symbol in SYMBOLS:
     try:
-        
         price= get_price(symbol)
         average,days = get_weighted_average(symbol)
         if price<average:
@@ -72,8 +75,25 @@ for symbol in SYMBOLS:
             print("\033[31m",end="")
             print(f"Sell {symbol:^11} at {price:8.2f} and buy  at {average:8.2f} and profit {(price-average)*100/average:5.2f}% in {days:2} days")
             print("\033[0m",end="")
-
-       
+        
+        log = pd.DataFrame(
+                [[datetime.date.today(), datetime.datetime.now().isoformat(), price, average, days]],
+                columns=["date", "timestamp", "price", "estimate", "days"]
+            )
+        logpath = f"{LOG_PATH}/{symbol}.csv"
+        imgpath = f"{LOG_PATH}/{symbol}.png"
+        
+        if not os.path.exists(logpath):
+            df = log
+        else:
+            df = pd.read_csv(logpath)
+            df = pd.concat([df, log])
+        
+        plt.plot(df["timestamp"], df["price"], label="Price", marker="o", linestyle="--")
+        plt.plot(df["timestamp"], df["estimate"], label="Estimate", marker="x", linestyle="--")
+        plt.savefig(imgpath)
+        plt.close()
+        df.to_csv(logpath, index=False)
         
     except:
         print(f"Error in fetching data for {symbol}")
