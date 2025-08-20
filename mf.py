@@ -1,5 +1,6 @@
 from datetime import date
 import json
+import math
 import os
 import requests
 
@@ -28,7 +29,7 @@ TICKER_NAMES = {
     "M_SBTO": "SBI Multi Asset",
     "M_SBIVR": "SBI Silver",
     "M_TASC": "Tata Small Cap",
-    "M_WOMT": "WhiteOak Multi Asset"
+    "M_WOMT": "WhiteOak Multi Asset",
 }
 STOCKS = []
 DAY_CHANGE = {}
@@ -105,6 +106,35 @@ def getNAV(mf_ticker):
     return nav, tot
 
 
+def get_returns(mf_ticker: str, duration: str) -> float:
+    r = requests.get(
+        f"https://api.tickertape.in/mutualfunds/{mf_ticker}/charts/inter?duration={duration}"
+    )
+    if r.status_code == 200:
+        data = r.json()
+        return data["data"][0]["r"]
+    return 0
+
+def get_sip(mf_ticker: str, duration: str) -> float:
+    r = requests.get(
+        f"https://api.tickertape.in/mutualfunds/{mf_ticker}/charts/inter?duration={duration}"
+    )
+    if r.status_code == 200:
+        data = r.json()
+        points = data["data"][0]["points"]
+
+        invested = 0
+        units = 0
+        mo = "-".join(points[0]["ts"].split("-")[:2])
+        for point in points:
+            cu = "-".join(point["ts"].split("-")[:2])
+            if cu != mo:
+                invested += 1
+                units += 1/point["lp"]
+        price = units * points[-1]["lp"]
+        return 100*(price/invested - 1)
+    return 0
+
 if __name__ == "__main__":
     for ticker in TICKER_NAMES:
         getPortfolio(ticker)
@@ -112,12 +142,33 @@ if __name__ == "__main__":
     getStocks()
 
     changes = []
+    change_dict = {}
     for ticker in TICKER_NAMES:
         nav, tot = getNAV(ticker)
+        change_dict[TICKER_NAMES[ticker]] = nav
         changes.append((TICKER_NAMES[ticker], nav, tot))
     changes.sort(key=lambda x: x[1], reverse=True)
 
     for change in changes:
         if change[1] > 0:
             print("+", end="")
-        print(f"{change[1]:.2f}\t{change[0]} ({change[2]:.2f}%)")
+        print(f"{change[1]:.2f}\t{change[0]:20} ({change[2]:.2f}%)")
+
+    returns = []
+    total_s = 0
+    for ticker in TICKER_NAMES:
+        change = change_dict[TICKER_NAMES[ticker]]
+        r3y = get_returns(ticker, "3y") + change
+        r1m = get_returns(ticker, "1mo") + change
+        sip = get_sip(ticker, "3y") + change
+        xirr = 100*(math.pow(1+(sip/100), 1/3) - 1)
+ #       print(ticker, sip, xirr)
+        s = r1m * xirr
+        total_s += s
+        returns.append((TICKER_NAMES[ticker], sip, r1m, s, xirr))
+
+    returns.sort(key=lambda x: x[3])
+    for return_data in returns:
+        print(
+                f"{return_data[0]:20}:\t 3Y SIP: {return_data[1]:.2f}%,\t XIRR: {return_data[4]:.2f}%\t 1M Return: {return_data[2]:.2f}%,\t Score: {return_data[3]:.2f},\t Proportion: {return_data[3] / total_s:.2f}"
+        )
